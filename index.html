@@ -1,25 +1,98 @@
 <!DOCTYPE html>
 <html>
-<div id="scripts"></div>
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Bds Simples Pages Maneger</title>
+    <title id="title">Bds Simples Pages Maneger</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
 </head>
 <body>
     <div id="root" class="root">
         <div id="buttons" class="buttons">
-            <button onclick="startServer();">Start Server</button> <button onclick="stopserver();">Stop Server</button> <button onclick="restartServer();">restart Server</button>
+            <button onclick="startServer();">Start Server</button>
+            <button onclick="bds_stop();">Stop Server</button>
+        </div>
+        <div>
+            <input id="cmds" class="commands" type="text"><input onclick="sendcomand();" id="comsen" type="submit">
         </div>
         <div>
             <!-- We can have a textarea or a div some other formats cannot work -->
             <div id="LOG"></div>
             <!-- <textarea id="LOG"></textarea> -->
         </div>
-        <div>
-            <input id="cmds" class="commands" type="text" onkeydown="sendco(this)"><input onclick="sendcomand();" id="comsen" type="submit">
-        </div>
     </div> <!-- End Root DIV -->
 </body>
 </html>
+<script>
+    function startServer(){
+        if (!(bds_detect())){
+            var bds_EXIT = document.getElementById("LOG").innerHTML
+            if (bds_EXIT.includes("Quit correctly")){
+                document.getElementById("LOG").innerHTML = ""
+            }
+            global.serverstated = bds_start();
+            function logout(data){
+                const lg = data
+                document.getElementById("LOG").innerHTML += lg.split("\n").join(`<br>`).split("\n").join("")
+                document.getElementById("LOG").scrollTo(0, 9999)
+            }
+            serverstated.stdout.on("data", function (data) {
+                logout(data)
+            });
+        } else {
+            alert("Your server is running")
+        }
+    }
+    
+    function restartServer(){
+        if (bds_detect()){
+            bds_stop()
+        }
+        startServer();
+    }
+    
+    function DownloadBDS(){
+        bds_download(document.getElementById("bds-Server_download").value)
+    }
+    function sendcomand() {
+        document.getElementById("comsen").setAttribute("disabled","")
+        var blank = "";
+        var command = document.getElementById("cmds").value
+        if (command === "stop"){
+            alert("Use Stop in options");
+            document.getElementById("cmds").value = blank
+        } else {
+            if (command === blank) {
+                document.getElementById("comsen").removeAttribute("disabled")
+                alert("command is blank")
+            } else {
+                document.getElementById("comsen").removeAttribute("disabled")
+                document.getElementById("cmds").value = ""
+                bds_command(command)
+            }
+        }
+    }
+    
+    function log_save(){
+        alert("Your log file is being automatically saved to the Server directory")
+    }
+    
+    bds_control.telegram.launch();
+    
+    setInterval(() => {
+        var str = document.getElementById("title");
+        var bds_status = localStorage.getItem("bds_status");
+        if (bds_status === "true"){
+            var msg = "The server is running"
+        } else {
+            var msg = "The server is stopped"
+        }
+        str.innerHTML = `Bds Maneger \\-/ ${msg}`
+    }, 1000);
+    
+    function setID(){
+        const gd_id = document.getElementById("drive_id").value
+        localStorage.setItem("GDID", gd_id);
+        alert("Sucess")
+    }
+</script>
